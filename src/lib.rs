@@ -1,3 +1,4 @@
+pub use async_tungstenite;
 use std::future::Future;
 use std::marker::{PhantomData, Send};
 use std::sync::Arc;
