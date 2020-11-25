@@ -65,6 +65,7 @@ where
         response.insert_header(CONNECTION, "Upgrade");
         let hash = Sha1::new().chain(header).chain(WEBSOCKET_GUID).finalize();
         response.insert_header("Sec-Websocket-Accept", base64::encode(&hash[..]));
+        response.insert_header("Sec-Websocket-Version", "13");
 
         let http_res: &mut tide::http::Response = response.as_mut();
         let upgrade_receiver = http_res.recv_upgrade().await;
