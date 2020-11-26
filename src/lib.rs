@@ -55,6 +55,10 @@ impl WebSocketConnection {
         Ok(())
     }
 
+    pub async fn send_json(&self, json: &impl serde::Serialize) -> tide::Result<()> {
+        self.send_string(serde_json::to_string(json)?).await
+    }
+
     pub fn new(ws: WebSocketStream<Connection>) -> Self {
         let (s, r) = ws.split();
         Self(Arc::new(Mutex::new(s)), Arc::new(Mutex::new(r)))
