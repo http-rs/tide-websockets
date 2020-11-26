@@ -1,5 +1,4 @@
 use async_dup::{Arc, Mutex};
-use async_tungstenite::tungstenite::Message;
 use futures_util::stream::{SplitSink, SplitStream, Stream};
 use futures_util::{SinkExt, StreamExt};
 use std::future::Future;
@@ -16,6 +15,8 @@ use tide::http::upgrade::Connection;
 use tide::{Middleware, Request, Response, StatusCode};
 
 pub use async_tungstenite;
+
+pub use async_tungstenite::tungstenite::{Error, Message};
 
 const WEBSOCKET_GUID: &str = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 

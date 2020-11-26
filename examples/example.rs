@@ -1,5 +1,5 @@
 use async_std::prelude::*;
-use tide_websockets::WebsocketMiddleware;
+use tide_websockets::{Message, WebsocketMiddleware};
 
 #[async_std::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -8,8 +8,7 @@ async fn main() -> Result<(), std::io::Error> {
     app.at("/")
         .with(WebsocketMiddleware::new(
             |_request, mut stream| async move {
-                while let Some(Ok(message)) = stream.next().await {
-                    let input = message.into_text().unwrap();
+                while let Some(Ok(Message::Text(input))) = stream.next().await {
                     let output: String = input.chars().rev().collect();
 
                     stream
