@@ -12,7 +12,9 @@ async fn main() -> Result<(), std::io::Error> {
                     let input = message.into_text().unwrap();
                     let output: String = input.chars().rev().collect();
 
-                    stream.send(format!("{}: {}", &input, &output)).await?;
+                    stream
+                        .send_string(format!("{} | {}", &input, &output))
+                        .await?;
                 }
 
                 Ok(())

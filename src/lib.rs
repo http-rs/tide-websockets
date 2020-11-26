@@ -1,10 +1,10 @@
+use async_dup::{Arc, Mutex};
 use async_tungstenite::tungstenite::Message;
 use futures_util::stream::{SplitSink, SplitStream, Stream};
 use futures_util::{SinkExt, StreamExt};
 use std::future::Future;
 use std::marker::{PhantomData, Send};
 use std::pin::Pin;
-use std::sync::Arc;
 
 use async_std::task;
 use async_tungstenite::{tungstenite::protocol::Role, WebSocketStream};
@@ -38,26 +38,26 @@ where
     }
 }
 
-#[pin_project::pin_project]
+#[derive(Clone)]
 pub struct WebSocketConnection(
-    SplitSink<WebSocketStream<Connection>, Message>,
-    #[pin] SplitStream<WebSocketStream<Connection>>,
+    Arc<Mutex<SplitSink<WebSocketStream<Connection>, Message>>>,
+    Arc<Mutex<SplitStream<WebSocketStream<Connection>>>>,
 );
 
 impl WebSocketConnection {
-    pub async fn send(&mut self, s: String) -> tide::Result<()> {
-        self.0.send(Message::Text(s)).await?;
+    pub async fn send_string(&self, s: String) -> tide::Result<()> {
+        self.0.lock().send(Message::Text(s)).await?;
         Ok(())
     }
 
-    pub async fn send_bytes(&mut self, bytes: Vec<u8>) -> tide::Result<()> {
-        self.0.send(Message::Binary(bytes)).await?;
+    pub async fn send_bytes(&self, bytes: Vec<u8>) -> tide::Result<()> {
+        self.0.lock().send(Message::Binary(bytes)).await?;
         Ok(())
     }
 
     pub fn new(ws: WebSocketStream<Connection>) -> Self {
         let (s, r) = ws.split();
-        Self(s, r)
+        Self(Arc::new(Mutex::new(s)), Arc::new(Mutex::new(r)))
     }
 }
 
@@ -68,7 +68,7 @@ impl Stream for WebSocketConnection {
         self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
     ) -> task::Poll<Option<Self::Item>> {
-        self.project().1.poll_next(cx)
+        Pin::new(&mut *self.1.lock()).poll_next(cx)
     }
 }
 

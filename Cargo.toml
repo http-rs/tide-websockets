@@ -13,6 +13,7 @@ tide = "0.15.0"
 futures-util = "0.3.8"
 async-std = { version = "1.7.0", features = ["attributes"] }
 pin-project = "1.0.2"
+async-dup = "1.2.2"
 
 [patch.crates-io.http-types]
 git = "https://github.com/http-rs/http-types"
