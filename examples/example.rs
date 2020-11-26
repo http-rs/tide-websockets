@@ -8,7 +8,7 @@ async fn main() -> Result<(), std::io::Error> {
     app.at("/")
         .with(WebsocketMiddleware::new(
             |_request, mut stream| async move {
-                while let Some(message) = stream.next().await.transpose()? {
+                while let Some(Ok(message)) = stream.next().await {
                     let input = message.into_text().unwrap();
                     let output: String = input.chars().rev().collect();
 
