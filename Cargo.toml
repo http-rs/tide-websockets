@@ -19,8 +19,7 @@ serde = "1.0.117"
 
 [patch.crates-io.http-types]
 git = "https://github.com/http-rs/http-types"
-features = ["unstable"]
-branch = "new-connection"
+branch = "stabilize-upgrade"
 
 [patch.crates-io.async-h1]
 git = "https://github.com/jbr/async-h1"
