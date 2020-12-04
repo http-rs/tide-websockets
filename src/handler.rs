@@ -15,7 +15,7 @@ use tide::{Middleware, Request, Response, Result, StatusCode};
 
 const WEBSOCKET_GUID: &str = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
-/// # tide_websockets::WebSocket: The main struct for websockets in tide
+/// # endpoint/middleware handler for websockets in tide
 ///
 /// This can either be used as a middleware or as an
 /// endpoint. Regardless of which approach is taken, the handler

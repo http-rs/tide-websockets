@@ -9,6 +9,8 @@ use futures_util::{SinkExt, StreamExt};
 use crate::Message;
 use tide::http::upgrade::Connection;
 
+/// # WebSocket connection
+///
 /// This is the type that the handler passed to [`WebSocket::new`]
 /// receives. It represents a bidirectional stream of websocket data.
 #[derive(Clone, Debug)]
