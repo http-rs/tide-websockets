@@ -3,6 +3,13 @@ name = "tide-websockets"
 version = "0.1.0"
 authors = ["Jacob Rothstein <hi@jbr.me>"]
 edition = "2018"
+description = "tide websockets"
+readme = "README.md"
+repository = "https://github.com/http-rs/tide-websockets"
+documentation = "https://docs.rs/tide-websockets"
+license = "MIT OR Apache-2.0"
+keywords = ["tide", "websockets"]
+categories = ["web-programming::http-server", "web-programming"]
 
 [dependencies]
 async-tungstenite = "0.10.0"
