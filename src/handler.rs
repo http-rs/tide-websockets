@@ -15,6 +15,86 @@ use tide::{Middleware, Request, Response, Result, StatusCode};
 
 const WEBSOCKET_GUID: &str = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
+/// # tide_websockets::WebSocket: The main struct for websockets in tide
+///
+/// This can either be used as a middleware or as an
+/// endpoint. Regardless of which approach is taken, the handler
+/// function provided to [`WebSocket::new`] is only called if the
+/// request correctly negotiates an upgrade to the websocket protocol.
+///
+/// ## As a middleware
+///
+/// If used as a middleware, the endpoint will be executed if the
+/// request is not a websocket upgrade.
+///
+/// ### Example
+///
+/// ```rust
+/// use async_std::prelude::*;
+/// use tide_websockets::{Message, WebSocket};
+///
+/// #[async_std::main]
+/// async fn main() -> Result<(), std::io::Error> {
+///     let mut app = tide::new();
+///
+///     app.at("/ws")
+///         .with(WebSocket::new(|_request, mut stream| async move {
+///             while let Some(Ok(Message::Text(input))) = stream.next().await {
+///                 let output: String = input.chars().rev().collect();
+///
+///                 stream
+///                     .send_string(format!("{} | {}", &input, &output))
+///                     .await?;
+///             }
+///
+///             Ok(())
+///         }))
+///        .get(|_| async move { Ok("this was not a websocket request") });
+///
+/// # if false {
+///     app.listen("127.0.0.1:8080").await?;
+/// # }
+///     Ok(())
+/// }
+/// ```
+///
+/// ## As an endpoint
+///
+/// If used as an endpoint but the request is
+/// not a websocket request, tide will reply with a `426 Upgrade
+/// Required` status code.
+///
+/// ### example
+///
+/// ```rust
+/// use async_std::prelude::*;
+/// use tide_websockets::{Message, WebSocket};
+///
+/// #[async_std::main]
+/// async fn main() -> Result<(), std::io::Error> {
+///     let mut app = tide::new();
+///
+///     app.at("/ws")
+///         .get(WebSocket::new(|_request, mut stream| async move {
+///             while let Some(Ok(Message::Text(input))) = stream.next().await {
+///                 let output: String = input.chars().rev().collect();
+///
+///                 stream
+///                     .send_string(format!("{} | {}", &input, &output))
+///                     .await?;
+///             }
+///
+///             Ok(())
+///         }));
+///
+/// # if false {
+///     app.listen("127.0.0.1:8080").await?;
+/// # }
+///     Ok(())
+/// }
+/// ```
+///
+#[derive(Debug)]
 pub struct WebSocket<S, H> {
     handler: Arc<H>,
     ghostly_apparition: PhantomData<S>,
@@ -36,8 +116,9 @@ impl<S, H, Fut> WebSocket<S, H>
 where
     S: Send + Sync + Clone + 'static,
     H: Fn(Request<S>, WebSocketConnection) -> Fut + Sync + Send + 'static,
-    Fut: Future<Output = tide::Result<()>> + Send + 'static,
+    Fut: Future<Output = Result<()>> + Send + 'static,
 {
+    /// Build a new WebSocket with a handler function that
     pub fn new(handler: H) -> Self {
         Self {
             handler: Arc::new(handler),
@@ -74,7 +155,7 @@ where
         task::spawn(async move {
             if let Some(stream) = upgrade_receiver.await {
                 let stream = WebSocketStream::from_raw_socket(stream, Role::Server, None).await;
-                handler(req, WebSocketConnection::new(stream)).await
+                handler(req, stream.into()).await
             } else {
                 Err(format_err!("never received an upgrade!"))
             }
@@ -88,10 +169,10 @@ where
 impl<H, S, Fut> tide::Endpoint<S> for WebSocket<S, H>
 where
     H: Fn(Request<S>, WebSocketConnection) -> Fut + Sync + Send + 'static,
-    Fut: Future<Output = tide::Result<()>> + Send + 'static,
+    Fut: Future<Output = Result<()>> + Send + 'static,
     S: Send + Sync + Clone + 'static,
 {
-    async fn call(&self, req: Request<S>) -> tide::Result {
+    async fn call(&self, req: Request<S>) -> Result {
         match self.handle_upgrade(req).await {
             Upgraded(result) => result,
             NotUpgraded(_) => Ok(Response::new(StatusCode::UpgradeRequired)),
@@ -103,10 +184,10 @@ where
 impl<H, S, Fut> Middleware<S> for WebSocket<S, H>
 where
     H: Fn(Request<S>, WebSocketConnection) -> Fut + Sync + Send + 'static,
-    Fut: Future<Output = tide::Result<()>> + Send + 'static,
+    Fut: Future<Output = Result<()>> + Send + 'static,
     S: Send + Sync + Clone + 'static,
 {
-    async fn handle(&self, req: tide::Request<S>, next: tide::Next<'_, S>) -> tide::Result {
+    async fn handle(&self, req: Request<S>, next: tide::Next<'_, S>) -> Result {
         match self.handle_upgrade(req).await {
             Upgraded(result) => result,
             NotUpgraded(req) => Ok(next.run(req).await),
