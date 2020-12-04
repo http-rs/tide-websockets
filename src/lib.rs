@@ -1,32 +1,6 @@
 //! it's websockets, for tide!
 //!
-//! ```rust
-//! use async_std::prelude::*;
-//! use tide_websockets::{Message, WebSocket};
-//!
-//! #[async_std::main]
-//! async fn main() -> Result<(), std::io::Error> {
-//!     let mut app = tide::new();
-//!
-//!     app.at("/ws")
-//!         .get(WebSocket::new(|_request, mut stream| async move {
-//!             while let Some(Ok(Message::Text(input))) = stream.next().await {
-//!                 let output: String = input.chars().rev().collect();
-//!
-//!                 stream
-//!                     .send_string(format!("{} | {}", &input, &output))
-//!                     .await?;
-//!             }
-//!
-//!             Ok(())
-//!         }));
-//!
-//! # if false {
-//!     app.listen("127.0.0.1:8080").await?;
-//! # }
-//!     Ok(())
-//! }
-//! ```
+//! see [`WebSocket`] for examples and usage
 
 #![forbid(unsafe_code, future_incompatible)]
 #![deny(
