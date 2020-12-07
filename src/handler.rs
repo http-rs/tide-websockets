@@ -98,6 +98,7 @@ const WEBSOCKET_GUID: &str = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 pub struct WebSocket<S, H> {
     handler: Arc<H>,
     ghostly_apparition: PhantomData<S>,
+    protocols: Vec<String>,
 }
 
 enum UpgradeStatus<S> {
@@ -123,6 +124,17 @@ where
         Self {
             handler: Arc::new(handler),
             ghostly_apparition: PhantomData,
+            protocols: Default::default(),
+        }
+    }
+
+    /// `protocols` is a sequence of known protocols. On successful handshake,
+    /// the returned response headers contain the first protocol in this list
+    /// which the server also knows.
+    pub fn with_protocols(self, protocols: &[&str]) -> Self {
+        Self {
+            protocols: protocols.iter().map(ToString::to_string).collect(),
+            ..self
         }
     }
 
@@ -140,6 +152,14 @@ where
             None => return Upgraded(Err(format_err!("expected sec-websocket-key"))),
         };
 
+        let protocol = req.header("Sec-Websocket-Protocol").and_then(|value| {
+            value
+                .as_str()
+                .split(',')
+                .map(str::trim)
+                .find(|req_p| self.protocols.iter().any(|p| p == req_p))
+        });
+
         let mut response = Response::new(StatusCode::SwitchingProtocols);
 
         response.insert_header(UPGRADE, "websocket");
@@ -147,6 +167,10 @@ where
         let hash = Sha1::new().chain(header).chain(WEBSOCKET_GUID).finalize();
         response.insert_header("Sec-Websocket-Accept", base64::encode(&hash[..]));
         response.insert_header("Sec-Websocket-Version", "13");
+
+        if let Some(protocol) = protocol {
+            response.insert_header("Sec-Websocket-Protocol", protocol);
+        }
 
         let http_res: &mut tide::http::Response = response.as_mut();
         let upgrade_receiver = http_res.recv_upgrade().await;
