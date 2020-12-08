@@ -21,20 +21,21 @@ pub struct WebSocketConnection(
 
 impl WebSocketConnection {
     /// Sends a string message to the connected websocket client
-    pub async fn send_string(&self, s: String) -> tide::Result<()> {
+    pub async fn send_string(&self, s: String) -> async_tungstenite::tungstenite::Result<()> {
         self.0.lock().send(Message::Text(s)).await?;
         Ok(())
     }
 
     /// Sends a binary message to the connected websocket client
-    pub async fn send_bytes(&self, bytes: Vec<u8>) -> tide::Result<()> {
+    pub async fn send_bytes(&self, bytes: Vec<u8>) -> async_tungstenite::tungstenite::Result<()> {
         self.0.lock().send(Message::Binary(bytes)).await?;
         Ok(())
     }
 
     /// Sends the serde_json serialization of the provided type as a string to the connected websocket client
     pub async fn send_json(&self, json: &impl serde::Serialize) -> tide::Result<()> {
-        self.send_string(serde_json::to_string(json)?).await
+        self.send_string(serde_json::to_string(json)?).await?;
+        Ok(())
     }
 
     pub(crate) fn new(ws: WebSocketStream<Connection>) -> Self {
