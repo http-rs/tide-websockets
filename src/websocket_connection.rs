@@ -3,8 +3,8 @@ use std::pin::Pin;
 use async_dup::{Arc, Mutex};
 use async_std::task;
 use async_tungstenite::WebSocketStream;
+use futures_util::sink::Sink;
 use futures_util::stream::{SplitSink, SplitStream, Stream};
-use futures_util::sink::{Sink};
 use futures_util::{SinkExt, StreamExt};
 
 use crate::Message;
@@ -64,10 +64,7 @@ impl Sink<Message> for WebSocketConnection {
     ) -> task::Poll<Result<(), Self::Error>> {
         Sink::poll_ready(Pin::new(&mut *self.0.lock()), cx)
     }
-    fn start_send(
-        self: Pin<&mut Self>,
-        item: Message,
-    ) -> Result<(), Self::Error> {
+    fn start_send(self: Pin<&mut Self>, item: Message) -> Result<(), Self::Error> {
         Sink::start_send(Pin::new(&mut *self.0.lock()), item)
     }
     fn poll_flush(
