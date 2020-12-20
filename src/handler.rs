@@ -1,5 +1,5 @@
+use std::future::Future;
 use std::marker::{PhantomData, Send};
-use std::{future::Future, str::FromStr};
 
 use crate::async_tungstenite::WebSocketStream;
 use crate::tungstenite::protocol::Role;
@@ -9,8 +9,8 @@ use async_dup::Arc;
 use async_std::task;
 use sha1::{Digest, Sha1};
 
+use tide::http::format_err;
 use tide::http::headers::{HeaderName, CONNECTION, UPGRADE};
-use tide::http::{format_err, headers::HeaderValue};
 use tide::{Middleware, Request, Response, Result, StatusCode};
 
 const WEBSOCKET_GUID: &str = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
