@@ -1,5 +1,5 @@
-use std::future::Future;
 use std::marker::{PhantomData, Send};
+use std::{future::Future, str::FromStr};
 
 use crate::async_tungstenite::WebSocketStream;
 use crate::tungstenite::protocol::Role;
@@ -9,8 +9,8 @@ use async_dup::Arc;
 use async_std::task;
 use sha1::{Digest, Sha1};
 
-use tide::http::format_err;
 use tide::http::headers::{HeaderName, CONNECTION, UPGRADE};
+use tide::http::{format_err, headers::HeaderValue};
 use tide::{Middleware, Request, Response, Result, StatusCode};
 
 const WEBSOCKET_GUID: &str = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -113,6 +113,16 @@ fn header_eq_ignore_case<T>(req: &Request<T>, header_name: HeaderName, value: &s
         .unwrap_or(false)
 }
 
+fn header_contain_ignore_case<T>(req: &Request<T>, header_name: HeaderName, value: &str) -> bool {
+    req.header(header_name)
+        .map(|h| {
+            h.as_str()
+                .to_ascii_lowercase()
+                .contains(&value.to_ascii_lowercase())
+        })
+        .unwrap_or(false)
+}
+
 impl<S, H, Fut> WebSocket<S, H>
 where
     S: Send + Sync + Clone + 'static,
@@ -139,7 +149,7 @@ where
     }
 
     async fn handle_upgrade(&self, req: Request<S>) -> UpgradeStatus<S> {
-        let connection_upgrade = header_eq_ignore_case(&req, CONNECTION, "upgrade");
+        let connection_upgrade = header_contain_ignore_case(&req, CONNECTION, "upgrade");
         let upgrade_to_websocket = header_eq_ignore_case(&req, UPGRADE, "websocket");
         let upgrade_requested = connection_upgrade && upgrade_to_websocket;
 
