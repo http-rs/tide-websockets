@@ -109,7 +109,7 @@ use UpgradeStatus::{NotUpgraded, Upgraded};
 
 fn header_eq_ignore_case<T>(req: &Request<T>, header_name: HeaderName, value: &str) -> bool {
     req.header(header_name)
-        .map(|h| h.as_str().eq_ignore_ascii_case(value))
+        .map(|h| h.as_str().split(",").map(|s| s.trim().eq_ignore_ascii_case(value)).collect::<Vec<bool>>().contains(&true))
         .unwrap_or(false)
 }
 
