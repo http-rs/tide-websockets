@@ -107,7 +107,7 @@ enum UpgradeStatus<S> {
 }
 use UpgradeStatus::{NotUpgraded, Upgraded};
 
-fn header_eq_ignore_case<T>(req: &Request<T>, header_name: HeaderName, value: &str) -> bool {
+fn header_contains_ignore_case<T>(req: &Request<T>, header_name: HeaderName, value: &str) -> bool {
     req.header(header_name)
         .map(|h| h.as_str().split(",").map(|s| s.trim().eq_ignore_ascii_case(value)).collect::<Vec<bool>>().contains(&true))
         .unwrap_or(false)
@@ -139,8 +139,8 @@ where
     }
 
     async fn handle_upgrade(&self, req: Request<S>) -> UpgradeStatus<S> {
-        let connection_upgrade = header_eq_ignore_case(&req, CONNECTION, "upgrade");
-        let upgrade_to_websocket = header_eq_ignore_case(&req, UPGRADE, "websocket");
+        let connection_upgrade = header_contains_ignore_case(&req, CONNECTION, "upgrade");
+        let upgrade_to_websocket = header_contains_ignore_case(&req, UPGRADE, "websocket");
         let upgrade_requested = connection_upgrade && upgrade_to_websocket;
 
         if !upgrade_requested {
