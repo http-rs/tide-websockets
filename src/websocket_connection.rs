@@ -20,15 +20,19 @@ pub struct WebSocketConnection(
 );
 
 impl WebSocketConnection {
-    /// Sends a string message to the connected websocket client
-    pub async fn send_string(&self, s: String) -> async_tungstenite::tungstenite::Result<()> {
-        self.0.lock().send(Message::Text(s)).await?;
-        Ok(())
+    /// Sends a string message to the connected websocket client. This is equivalent to `.send(Message::Text(string))`
+    pub async fn send_string(&self, string: String) -> async_tungstenite::tungstenite::Result<()> {
+        self.send(Message::Text(string)).await
     }
 
-    /// Sends a binary message to the connected websocket client
+    /// Sends a binary message to the connected websocket client. This is equivalent to `.send(Message::Binary(bytes))`
     pub async fn send_bytes(&self, bytes: Vec<u8>) -> async_tungstenite::tungstenite::Result<()> {
-        self.0.lock().send(Message::Binary(bytes)).await?;
+        self.send(Message::Binary(bytes)).await
+    }
+
+    /// Sends a [`Message`] to the client
+    pub async fn send(&self, message: Message) -> async_tungstenite::tungstenite::Result<()> {
+        self.0.lock().send(message).await?;
         Ok(())
     }
 
