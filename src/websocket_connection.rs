@@ -3,6 +3,7 @@ use std::pin::Pin;
 use async_dup::{Arc, Mutex};
 use async_std::task;
 use async_tungstenite::WebSocketStream;
+use futures_util::sink::Sink;
 use futures_util::stream::{SplitSink, SplitStream, Stream};
 use futures_util::{SinkExt, StreamExt};
 
@@ -56,6 +57,35 @@ impl Stream for WebSocketConnection {
         cx: &mut task::Context<'_>,
     ) -> task::Poll<Option<Self::Item>> {
         Pin::new(&mut *self.1.lock()).poll_next(cx)
+    }
+}
+
+impl Sink<Message> for WebSocketConnection {
+    type Error = async_tungstenite::tungstenite::Error;
+
+    fn poll_ready(
+        self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
+    ) -> task::Poll<Result<(), Self::Error>> {
+        Pin::new(&mut *self.0.lock()).poll_ready(cx)
+    }
+
+    fn start_send(self: Pin<&mut Self>, item: Message) -> Result<(), Self::Error> {
+        Pin::new(&mut *self.0.lock()).start_send(item)
+    }
+
+    fn poll_flush(
+        self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
+    ) -> task::Poll<Result<(), Self::Error>> {
+        Pin::new(&mut *self.0.lock()).poll_flush(cx)
+    }
+
+    fn poll_close(
+        self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
+    ) -> task::Poll<Result<(), Self::Error>> {
+        Pin::new(&mut *self.0.lock()).poll_close(cx)
     }
 }
 
