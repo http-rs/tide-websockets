@@ -30,8 +30,13 @@ see [the example](https://github.com/http-rs/tide-websockets/blob/main/examples/
 This crate uses ``#![deny(unsafe_code)]`` to ensure everything is implemented in
 100% Safe Rust.
 
+
 ## Example applications
 * [tide-ws-rooms](https://github.com/pepoviola/tide-ws-rooms/)
+
+
+## Alternatives
+- [tide-websockets-sink](https://github.com/cryptoquick/tide-websockets-sink) - A fork of this project that implements the Sink trait.
 
 ## License
 
