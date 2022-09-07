@@ -12,7 +12,7 @@ keywords = ["tide", "websockets"]
 categories = ["web-programming::http-server", "web-programming"]
 
 [dependencies]
-async-tungstenite = "0.15.0"
+async-tungstenite = "0.17.0"
 sha-1 = "0.9.6"
 base64 = "0.13.0"
 tide = { version = "0.16.0", default-features = false, features = ["h1-server"] }
