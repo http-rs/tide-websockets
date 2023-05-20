@@ -13,7 +13,7 @@ categories = ["web-programming::http-server", "web-programming"]
 
 [dependencies]
 async-tungstenite = "0.22.2"
-sha-1 = "0.9.6"
+sha1 = "0.10.5"
 base64 = "0.21.0"
 tide = { version = "0.16.0", default-features = false, features = ["h1-server"] }
 futures-util = "0.3.15"

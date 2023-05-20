@@ -8,7 +8,7 @@ use crate::WebSocketConnection;
 use async_dup::Arc;
 use async_std::task;
 use base64::{prelude::BASE64_STANDARD, Engine};
-use sha1::{Digest, Sha1};
+use sha1::{digest::Update, Digest, Sha1};
 
 use tide::http::format_err;
 use tide::http::headers::{HeaderName, CONNECTION, UPGRADE};
