@@ -7,6 +7,7 @@ use crate::WebSocketConnection;
 
 use async_dup::Arc;
 use async_std::task;
+use base64::{prelude::BASE64_STANDARD, Engine};
 use sha1::{Digest, Sha1};
 
 use tide::http::format_err;
@@ -169,7 +170,7 @@ where
         response.insert_header(UPGRADE, "websocket");
         response.insert_header(CONNECTION, "Upgrade");
         let hash = Sha1::new().chain(header).chain(WEBSOCKET_GUID).finalize();
-        response.insert_header("Sec-Websocket-Accept", base64::encode(&hash[..]));
+        response.insert_header("Sec-Websocket-Accept", BASE64_STANDARD.encode(&hash[..]));
         response.insert_header("Sec-Websocket-Version", "13");
 
         if let Some(protocol) = protocol {
