@@ -15,7 +15,6 @@ sha1 = "0.10.5"
 base64 = "0.21.0"
 tide = { version = "0.16.0", default-features = false, features = ["h1-server"] }
 futures-util = "0.3.15"
-pin-project = "1.0.7"
 async-dup = "1.2.2"
 serde_json = "1.0.64"
 serde = "1.0.126"
